@@ -112,14 +112,33 @@ class TuupaymentCompleteModuleFrontController extends ModuleFrontController
      */
     private function resolveReference()
     {
-        foreach (['reference', 'x_reference', 'X_REFERENCE', 'ref'] as $key) {
-            $value = trim((string) Tools::getValue($key));
+        // Prefer TUU's own x_reference (clean), then our legacy fallbacks.
+        foreach (['x_reference', 'X_REFERENCE', 'reference', 'ref'] as $key) {
+            $value = $this->sanitizeReference((string) Tools::getValue($key));
             if ($value !== '') {
                 return $value;
             }
         }
 
         return '';
+    }
+
+    /**
+     * Defensive cleanup: if a value arrives contaminated with an appended query
+     * string (e.g. "TUU-4-XXXX?x_account_id=..." — TUU concatenates params with
+     * a literal "?"), keep only the reference part.
+     *
+     * @param string $value
+     *
+     * @return string
+     */
+    private function sanitizeReference($value)
+    {
+        $value = trim($value);
+        // Cut at the first query separator or whitespace.
+        $value = preg_replace('/[?&\s].*$/s', '', $value);
+
+        return trim((string) $value);
     }
 
     /**

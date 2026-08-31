@@ -26,9 +26,15 @@ class TuupaymentCancelModuleFrontController extends ModuleFrontController
         /** @var Tuupayment $module */
         $module = $this->module;
 
-        $reference = trim((string) Tools::getValue('reference'));
-        if ($reference === '') {
-            $reference = trim((string) Tools::getValue('x_reference'));
+        // Prefer TUU's own x_reference; strip any appended query string that TUU
+        // may have concatenated with a literal "?".
+        $reference = '';
+        foreach (['x_reference', 'reference'] as $key) {
+            $value = preg_replace('/[?&\s].*$/s', '', trim((string) Tools::getValue($key)));
+            if ($value !== '') {
+                $reference = trim((string) $value);
+                break;
+            }
         }
 
         if ($reference !== '') {

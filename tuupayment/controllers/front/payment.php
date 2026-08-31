@@ -156,9 +156,16 @@ class TuupaymentPaymentModuleFrontController extends ModuleFrontController
             'x_description' => $this->buildDescription($cart, $reference),
             'x_reference' => $reference,
             'x_shop_name' => (string) Configuration::get('PS_SHOP_NAME'),
-            'x_url_callback' => $module->getCallbackUrl($reference),
-            'x_url_cancel' => $link->getModuleLink($module->name, 'cancel', ['reference' => $reference], true),
-            'x_url_complete' => $link->getModuleLink($module->name, 'complete', ['reference' => $reference], true),
+            // Do NOT append our own query string (e.g. ?reference=...) to these
+            // URLs: TUU concatenates its result parameters with a literal "?"
+            // even when the URL already has a query string, which corrupts the
+            // first parameter. We rely on TUU's own x_reference parameter, sent
+            // in both the callback body and the return query string, to match
+            // the transaction. Keeping these URLs free of a query string
+            // requires Friendly URLs (SEO URLs) to be enabled in the shop.
+            'x_url_callback' => $module->getCallbackUrl(),
+            'x_url_cancel' => $link->getModuleLink($module->name, 'cancel', [], true),
+            'x_url_complete' => $link->getModuleLink($module->name, 'complete', [], true),
         ];
     }
 
