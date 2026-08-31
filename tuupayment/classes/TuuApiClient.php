@@ -72,10 +72,24 @@ class TuuApiClient
         $payload['x_account_id'] = $this->accountId;
 
         // Remove any pre-existing signature and (re)compute it over the body.
+        // The signature is computed over the string representation of the
+        // values (as TUU documents it), so it is stable regardless of the JSON
+        // type used for x_amount below.
         unset($payload['x_signature']);
         $payload['x_signature'] = TuuSignature::generate($payload, $this->secretKey);
 
-        $body = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        // The API documents x_amount as a Number. Send it as a real JSON number
+        // (e.g. 19990, not "19990") when it holds an integer value, so strict
+        // validators accept it. Values with decimals are left as-is to avoid
+        // changing their textual form.
+        $encodePayload = $payload;
+        if (isset($encodePayload['x_amount'])
+            && is_string($encodePayload['x_amount'])
+            && preg_match('/^\d+$/', $encodePayload['x_amount']) === 1) {
+            $encodePayload['x_amount'] = (int) $encodePayload['x_amount'];
+        }
+
+        $body = json_encode($encodePayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         $result = [
             'success' => false,
