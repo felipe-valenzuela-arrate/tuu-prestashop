@@ -62,10 +62,16 @@ class TuupaymentPaymentModuleFrontController extends ModuleFrontController
         $response = $client->createPaymentIntent($payload);
 
         // Store the (signed) request payload for auditing (without the secret).
+        $auditRequest = $response['request'];
+        unset($auditRequest['x_signature']);
         $module->updateTransaction($reference, [
-            'request_payload' => json_encode($response['request'], JSON_UNESCAPED_UNICODE),
+            'request_payload' => json_encode($auditRequest, JSON_UNESCAPED_UNICODE),
             'redirect_url' => $response['redirect_url'],
             'status' => $response['success'] ? 'redirected' : 'intent_failed',
+            'message' => $response['success']
+                ? null
+                : Tools::substr('HTTP ' . (int) $response['http_code'] . ' ' . (string) $response['error']
+                    . ' | ' . (string) $response['raw'], 0, 500),
         ]);
 
         if ($response['success'] && $response['redirect_url']) {
@@ -78,7 +84,9 @@ class TuupaymentPaymentModuleFrontController extends ModuleFrontController
         // Failure creating the intent: show an error and go back to checkout.
         $module->log(
             'Failed to create payment intent for reference ' . $reference
-            . ' (HTTP ' . (int) $response['http_code'] . '): ' . (string) $response['error'],
+            . ' (HTTP ' . (int) $response['http_code'] . '): ' . (string) $response['error']
+            . ' | endpoint=' . $client->getEndpoint()
+            . ' | response=' . Tools::substr((string) $response['raw'], 0, 1000),
             3
         );
 

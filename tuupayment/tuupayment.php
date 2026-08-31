@@ -171,6 +171,14 @@ class Tuupayment extends PaymentModule
         $secretKey = trim((string) Tools::getValue('TUU_SECRET_KEY'));
         $title = trim((string) Tools::getValue('TUU_PAYMENT_TITLE'));
 
+        // The Secret Key field is a password input and is intentionally never
+        // pre-filled on render. If it is submitted empty but a key is already
+        // stored, keep the stored one instead of wiping it.
+        $storedSecret = (string) Configuration::get('TUU_SECRET_KEY');
+        if ($secretKey === '' && $storedSecret !== '') {
+            $secretKey = $storedSecret;
+        }
+
         $errors = [];
         if ($accountId === '') {
             $errors[] = $this->l('The Account ID is required.');
@@ -242,8 +250,10 @@ class Tuupayment extends PaymentModule
                         'type' => 'password',
                         'label' => $this->l('Secret Key'),
                         'name' => 'TUU_SECRET_KEY',
-                        'required' => true,
-                        'desc' => $this->l('Secret key used to sign requests and verify callbacks. Never share it.'),
+                        'required' => !Configuration::get('TUU_SECRET_KEY'),
+                        'desc' => Configuration::get('TUU_SECRET_KEY')
+                            ? $this->l('A Secret Key is already saved (hidden for security). Leave this field blank to keep it, or type a new one to replace it.')
+                            : $this->l('Secret key used to sign requests and verify callbacks. Never share it.'),
                     ],
                     [
                         'type' => 'text',
