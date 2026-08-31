@@ -29,23 +29,45 @@ class TuupaymentCompleteModuleFrontController extends ModuleFrontController
         /** @var Tuupayment $module */
         $module = $this->module;
 
+        $params = $this->collectSignedParams();
         $reference = $this->resolveReference();
-        if ($reference === '') {
-            $this->redirectToOrderHistory();
 
-            return;
-        }
+        $module->log(
+            'Complete return: reference="' . $reference . '"'
+            . ' params=' . json_encode($params, JSON_UNESCAPED_UNICODE)
+            . ' customer=' . (int) $this->context->customer->id,
+            1
+        );
 
-        $transaction = $module->getTransactionByReference($reference);
+        $transaction = $reference !== '' ? $module->getTransactionByReference($reference) : false;
+
+        // The gateway did not echo a reference we can match: fall back to the
+        // most recent paid order of the logged-in customer so a successful
+        // payment still lands on its confirmation page instead of the history.
         if (!$transaction) {
-            $module->log('Complete: unknown reference ' . $reference, 3);
+            if ($reference !== '') {
+                $module->log('Complete: unknown reference ' . $reference, 3);
+            }
+
+            $fallback = $module->getLatestPaidTransactionByCustomer((int) $this->context->customer->id);
+            if ($fallback && !empty($fallback['id_order'])) {
+                $module->log(
+                    'Complete: reference missing/unknown, recovered latest paid order '
+                    . (int) $fallback['id_order'] . ' for customer ' . (int) $this->context->customer->id,
+                    1
+                );
+                $this->redirectToConfirmation((int) $fallback['id_order'], (int) $fallback['id_cart']);
+
+                return;
+            }
+
+            $module->log('Complete: no matchable reference and no recoverable order; sending to history', 3);
             $this->redirectToOrderHistory();
 
             return;
         }
 
         // If the GET carries a valid signed result, process it (idempotent).
-        $params = $this->collectSignedParams();
         if (!empty($params) && isset($params['x_signature'])) {
             $module->processNotification($params, 'complete');
             // Reload after potential order creation.
@@ -55,6 +77,17 @@ class TuupaymentCompleteModuleFrontController extends ModuleFrontController
         // Order already created (by callback or by the step above): confirmation.
         if (!empty($transaction['id_order'])) {
             $this->redirectToConfirmation((int) $transaction['id_order'], (int) $transaction['id_cart']);
+
+            return;
+        }
+
+        // The reference matched a transaction but no order exists yet. The
+        // callback may still be in flight; before showing the pending page, try
+        // once more to recover a paid order for this customer (e.g. the callback
+        // created it under a different attempt/reference).
+        $fallback = $module->getLatestPaidTransactionByCustomer((int) $this->context->customer->id);
+        if ($fallback && !empty($fallback['id_order'])) {
+            $this->redirectToConfirmation((int) $fallback['id_order'], (int) $fallback['id_cart']);
 
             return;
         }
@@ -79,12 +112,33 @@ class TuupaymentCompleteModuleFrontController extends ModuleFrontController
      */
     private function resolveReference()
     {
-        $reference = (string) Tools::getValue('reference');
-        if ($reference === '') {
-            $reference = (string) Tools::getValue('x_reference');
+        // Prefer TUU's own x_reference (clean), then our legacy fallbacks.
+        foreach (['x_reference', 'X_REFERENCE', 'reference', 'ref'] as $key) {
+            $value = $this->sanitizeReference((string) Tools::getValue($key));
+            if ($value !== '') {
+                return $value;
+            }
         }
 
-        return trim($reference);
+        return '';
+    }
+
+    /**
+     * Defensive cleanup: if a value arrives contaminated with an appended query
+     * string (e.g. "TUU-4-XXXX?x_account_id=..." — TUU concatenates params with
+     * a literal "?"), keep only the reference part.
+     *
+     * @param string $value
+     *
+     * @return string
+     */
+    private function sanitizeReference($value)
+    {
+        $value = trim($value);
+        // Cut at the first query separator or whitespace.
+        $value = preg_replace('/[?&\s].*$/s', '', $value);
+
+        return trim((string) $value);
     }
 
     /**
