@@ -1,0 +1,25 @@
+/* TUU (Haulmer) payment module for PrestaShop. */
+
+.tuu-payment-desc {
+    margin: 0.5rem 0 0;
+    color: #555;
+    font-size: 0.9em;
+}
+
+.tuu-payment-return {
+    margin: 1rem 0;
+}
+
+.tuu-pending {
+    max-width: 720px;
+    margin: 2rem auto;
+    text-align: center;
+}
+
+.tuu-pending .h1 {
+    margin-bottom: 1rem;
+}
+
+.tuu-pending p {
+    margin-bottom: 0.75rem;
+}
