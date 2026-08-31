@@ -606,6 +606,29 @@ class Tuupayment extends PaymentModule
     }
 
     /**
+     * Latest transaction for a customer that has already been converted into an
+     * order. Used as a fallback on the return page when the gateway does not
+     * echo the reference back.
+     *
+     * @param int $idCustomer
+     *
+     * @return array|false
+     */
+    public function getLatestPaidTransactionByCustomer($idCustomer)
+    {
+        if ((int) $idCustomer <= 0) {
+            return false;
+        }
+
+        return Db::getInstance()->getRow(
+            'SELECT * FROM `' . _DB_PREFIX_ . 'tuu_transaction`
+             WHERE `id_customer` = ' . (int) $idCustomer . '
+             AND `id_order` IS NOT NULL AND `id_order` > 0
+             ORDER BY `id_tuu_transaction` DESC'
+        );
+    }
+
+    /**
      * @param int $idCart
      *
      * @return array|false
