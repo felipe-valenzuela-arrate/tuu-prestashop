@@ -127,9 +127,21 @@ class TuuApiClient
         $decoded = json_decode($response['body'], true);
         if (is_array($decoded)) {
             $result['data'] = $decoded;
+            $result['redirect_url'] = $this->extractRedirectUrl($result['data']);
+        } elseif (is_string($decoded) && $this->looksLikeUrl(trim($decoded))) {
+            // Response was a JSON-encoded string, e.g. "https://...".
+            $result['redirect_url'] = trim($decoded);
         }
 
-        $result['redirect_url'] = $this->extractRedirectUrl($result['data']);
+        // Fallback: TUU returns the payment URL as a plain-text body (not JSON),
+        // e.g. https://payment.haulmer.dev/secure/payment-intent/xxxx
+        if (!$result['redirect_url']) {
+            $bare = trim($response['body']);
+            $bare = trim($bare, "\"'");
+            if ($this->looksLikeUrl($bare)) {
+                $result['redirect_url'] = $bare;
+            }
+        }
 
         // The intent is considered created when the API returns a 2xx status
         // and provides a URL to send the customer to.
