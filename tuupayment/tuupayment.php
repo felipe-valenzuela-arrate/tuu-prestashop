@@ -4,7 +4,7 @@
  *
  * Accept online card payments through the TUU / Haulmer payment gateway.
  *
- * @author    Felipe Valenzuela
+ * @author    Felipe Valenzuela - BOOKGES SPA
  * @copyright 2026
  * @license   MIT
  */
