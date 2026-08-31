@@ -155,6 +155,20 @@ class Tuupayment extends PaymentModule
     {
         $output = '';
 
+        // Widen the (long) Secret Key field so it does not look like a short
+        // text input. The class is set on the field; also target it by name/id
+        // as a fallback across HelperForm template variations.
+        $output .= '<style>
+            #TUU_SECRET_KEY,
+            input[name="TUU_SECRET_KEY"],
+            .tuu-secret-key-input {
+                width: 100%;
+                max-width: 720px;
+                min-width: 320px;
+                font-family: monospace;
+            }
+        </style>';
+
         if (Tools::isSubmit('submitTuuPayment')) {
             $output .= $this->postProcessConfig();
         }
@@ -250,6 +264,7 @@ class Tuupayment extends PaymentModule
                         'type' => 'password',
                         'label' => $this->l('Secret Key'),
                         'name' => 'TUU_SECRET_KEY',
+                        'class' => 'tuu-secret-key-input',
                         'required' => !Configuration::get('TUU_SECRET_KEY'),
                         'desc' => Configuration::get('TUU_SECRET_KEY')
                             ? $this->l('A Secret Key is already saved (hidden for security). Leave this field blank to keep it, or type a new one to replace it.')
