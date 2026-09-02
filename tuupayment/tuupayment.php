@@ -33,7 +33,7 @@ class Tuupayment extends PaymentModule
         $this->name = 'tuupayment';
         $this->tab = 'payments_gateways';
         $this->version = '1.0.0';
-        $this->author = 'Felipe Valenzuela';
+        $this->author = 'BOOKGES SpA';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = ['min' => '1.7.6.0', 'max' => _PS_VERSION_];
         $this->controllers = ['payment', 'callback', 'complete', 'cancel'];
