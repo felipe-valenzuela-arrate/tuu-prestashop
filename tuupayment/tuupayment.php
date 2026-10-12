@@ -134,7 +134,7 @@ class Tuupayment extends PaymentModule
         Configuration::updateValue('TUU_SECRET_KEY', '');
         Configuration::updateValue('TUU_LIVE_MODE', 0);
         Configuration::updateValue('TUU_DEBUG_LOG', 0);
-        Configuration::updateValue('TUU_PAYMENT_TITLE', 'Pago con tarjeta (TUU)', true);
+        Configuration::updateValue('TUU_PAYMENT_TITLE', 'Pago con tarjetas (Crédito/Débito/Prepago)', true);
         Configuration::updateValue(
             'TUU_PAYMENT_DESCRIPTION',
             'Paga de forma segura con tarjeta de crédito o débito a través de TUU by Haulmer.',
