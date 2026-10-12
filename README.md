@@ -11,12 +11,7 @@ flujo de integración (intento de pago, callback server-to-server y firma
 
 ## Instalación rápida
 
-1. Genera el `.zip` del módulo (la carpeta `tuupayment/` debe quedar en la raíz
-   del archivo):
-
-   ```bash
-   zip -r tuupayment.zip tuupayment -x '*/.git/*' -x '*.DS_Store'
-   ```
+1. Descarga el `tuupayment.zip` del módulo
 
 2. En el back office: **Módulos → Gestor de módulos → Subir un módulo** y sube
    `tuupayment.zip`.
