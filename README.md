@@ -11,12 +11,12 @@ flujo de integración (intento de pago, callback server-to-server y firma
 
 ## Instalación rápida
 
-1. Descarga el `tuupayment.zip` del módulo
+1. Descarga el archivo `tuupayment.zip` del módulo
 
 2. En el back office: **Módulos → Gestor de módulos → Subir un módulo** y sube
    `tuupayment.zip`.
 
-3. Pulsa **Configurar** e ingresa tu **Account ID** y **Secret Key** de TUU.
+3. Pulsa **Configurar** e ingresa tu **Account ID** y **Secret Key** de TUU y habita **Production mode**.
 
 ## Características
 
