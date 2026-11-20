@@ -32,10 +32,15 @@ class Tuupayment extends PaymentModule
     {
         $this->name = 'tuupayment';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.0';
+        $this->version = '1.0.1';
         $this->author = 'BOOKGES SpA';
         $this->need_instance = 0;
-        $this->ps_versions_compliancy = ['min' => '1.7.6.0', 'max' => _PS_VERSION_];
+        // Declare a fixed upper bound for the whole 9.x branch. Using
+        // _PS_VERSION_ here makes the upgrade assistant (which evaluates this
+        // while still running the current version) believe the module only
+        // supports up to that exact version, and wrongly flag it as
+        // incompatible with any newer release.
+        $this->ps_versions_compliancy = ['min' => '1.7.6.0', 'max' => '9.99.99'];
         $this->controllers = ['payment', 'callback', 'complete', 'cancel'];
         $this->currencies = true;
         $this->currencies_mode = 'checkbox';

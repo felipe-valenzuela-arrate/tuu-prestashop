@@ -12,7 +12,7 @@ used only for user experience.
 
 ## Requirements
 
-- PrestaShop **1.7.6+ / 8.x / 9.x** (developed and tested against 9.1.4).
+- PrestaShop **1.7.6+ / 8.x / 9.x** (developed and tested against 9.1.4 and 9.2.1).
 - PHP **8.1+** with the **cURL** and **OpenSSL** extensions enabled.
 - An HTTPS store URL (required by TUU for the production callback).
 - A TUU account with an **Account ID** and a **Secret Key**.
